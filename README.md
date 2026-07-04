@@ -6,24 +6,9 @@
 [![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/Futsch1/medTimer/badge)](https://scorecard.dev/viewer/?uri=github.com/Futsch1/medTimer)
 [![OpenSSF Best Practices](https://www.bestpractices.dev/projects/9439/badge)](https://www.bestpractices.dev/projects/9439)
 
-# MedTimer for Android
+# MedTimer for Android (FORK !WIP!)
 
-![Feature Graphic](fastlane/metadata/android/en-US/images/featureGraphic.png)
-
-[<img src="https://fdroid.gitlab.io/artwork/badge/get-it-on.png"
-alt="Get it on F-Droid"
-height="80">](https://f-droid.org/packages/com.futsch1.medtimer/)
-[<img src="https://gitlab.com/IzzyOnDroid/repo/-/raw/master/assets/IzzyOnDroid.png"
-alt="Get it on IzzyOnDroid"
-height="80">](https://apt.izzysoft.de/fdroid/index/apk/com.futsch1.medtimer)
-[<img src="https://www.openapk.net/images/openapk-badge.png"
-alt="Get it on OpenApk"
-height="80">](https://www.openapk.net/medtimer/com.futsch1.medtimer/)
-[<img src="https://play.google.com/intl/en_us/badges/images/generic/en-play-badge.png"
-alt="Get it on Google Play"
-height="80">](https://play.google.com/store/apps/details?id=com.futsch1.medtimer)
-
-Or download the latest APK from
+Download the latest APK from
 the [Releases Section](https://github.com/Futsch1/medTimer/releases/latest).
 
 ## Description
@@ -97,13 +82,6 @@ See the [contributing guide](CONTRIBUTING.md) for details on how to contribute.
 If you want to contribute a translation, be welcomed to use
 [Weblate](https://hosted.weblate.org/projects/medtimer/).
 
-## Sponsor or support
-
-If you like my work, you can [buy me a coffee](https://www.buymeacoffee.com/futsch1). Note
-however that I will donate all the money I receive from your support to organizations supporting
-open-source or open knowledge, like the Mozilla Foundation, or the Apache Software Foundation or
-Wikimedia.
-
 ## Dependencies
 
 MedTimer uses the following great open source libraries and dependencies:
@@ -118,5 +96,3 @@ MedTimer uses the following great open source libraries and dependencies:
 - [Calendar](https://github.com/kizitonwose/Calendar)
 - [IconDialog](https://github.com/maltaisn/icondialoglib)
 - [HSV-Alpha Color Picker for Android](https://github.com/martin-stone/hsv-alpha-color-picker-android)
-
-Feature graphics generated using [hotpot.ai](https://hotpot.ai)
