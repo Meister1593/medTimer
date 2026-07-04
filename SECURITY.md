@@ -4,4 +4,4 @@ The app depends on Android framework code, so fixing most reported security issu
 
 ## Reporting a Vulnerability
 
-If you found a vulnerability in the app, privately report it via GitHub using [this link](https://github.com/Futsch1/medTimer/security/advisories/new).
+If you found a vulnerability in the app, privately report it via GitHub using [this link](https://github.com/Meister1593/medTimer/security/advisories/new).
