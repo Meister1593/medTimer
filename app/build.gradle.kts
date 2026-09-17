@@ -13,11 +13,11 @@ room {
 }
 
 android {
-    namespace = "com.futsch1.medtimer"
+    namespace = "com.plyshka.medtimer"
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "com.futsch1.medtimer"
+        applicationId = "com.plyshka.medtimer"
         minSdk = 28
         multiDexEnabled = true
         targetSdk = 36

@@ -5,7 +5,7 @@ All kinds of contributions are highly appreciated and will be treated with utmos
 ## Reporting bugs and requesting new features
 
 To report bugs or request new features, please use
-the [GitHub issue tracker](https://github.com/futsch1/MedTimer/issues).
+the [GitHub issue tracker](https://github.com/meister1593/MedTimer/issues).
 
 Before you report a bug or request a new feature, check if the bug is already present of if the
 feature has been requested and potentially was rejected in the past.

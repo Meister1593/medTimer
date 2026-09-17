@@ -67,7 +67,7 @@ jobs:
             ./gradlew packageDebug
             adb shell input keyevent 3
             adb shell settings put secure long_press_timeout 1500
-            adb uninstall com.futsch1.medtimer || true
+            adb uninstall com.plyshka.medtimer || true
             adb install -g app/build/outputs/apk/debug/MedTimer-debug.apk
-            adb shell monkey -p com.futsch1.medtimer -v 10000 --throttle 20
+            adb shell monkey -p com.plyshka.medtimer -v 10000 --throttle 20
           cores: 4
