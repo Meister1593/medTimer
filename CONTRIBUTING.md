@@ -26,7 +26,7 @@ project to check your translations in the app.
 
 ### Store text translations
 
-It is also possible to translate the app's text in the Google Play Store and F-Droid store. The
+It is also possible to translate the app's text in the F-Droid repository (WIP). The
 texts are located in the subfolder `fastlane/metadata/android`. To translate, copy the text files
 from `fastlane/metadata/android/en-US` into the respective subfolder with the target language code.
 

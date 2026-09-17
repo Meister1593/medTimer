@@ -32,7 +32,7 @@ You have the following rights regarding your personal data:
   personal data we hold about you.
 - Right to erasure: You have the right to request that we erase your personal data.
 
-To exercise any of these rights, please contact me via the developer contact in the Play Store.
+To exercise any of these rights, please contact me via the developer contact on GitHub.
 
 ## Changes to this Declaration
 
