@@ -1,5 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.preference.PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto">
+    <ListPreference
+        app:defaultValue="0"
+        app:entries="@array/medicine_types"
+        app:entryValues="@array/value_0_to_4"
+        app:key="type"
+        app:title="@string/medicine_type" />
     <EditTextPreference
         app:key="amount"
         app:title="@string/amount" />
@@ -35,12 +41,12 @@
             app:key="expiration_date"
             app:title="@string/expiration_date" />
         <Preference
-            app:key="clear_dates"
             app:icon="@drawable/trash"
-            app:title="@string/clear_dates"/>
+            app:key="clear_dates"
+            app:title="@string/clear_dates" />
         <Preference
             app:icon="@drawable/alarm"
             app:key="create_expiration_date_reminder"
-            app:title="@string/create_expiration_date_reminder"/>
+            app:title="@string/create_expiration_date_reminder" />
     </PreferenceCategory>
 </androidx.preference.PreferenceScreen>

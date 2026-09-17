@@ -7,6 +7,7 @@ import androidx.room.Ignore
 import androidx.room.PrimaryKey
 import com.plyshka.medtimer.ReminderNotificationChannelManager
 import com.google.gson.annotations.Expose
+import com.plyshka.medtimer.medicine.stockSettings.MedicineType
 import java.time.LocalDate
 import java.util.Objects
 
@@ -15,6 +16,10 @@ class Medicine() {
     @ColumnInfo(name = "medicineName")
     @Expose
     var name: String = ""
+
+    @ColumnInfo(defaultValue = "0")
+    @Expose
+    var type: Int = MedicineType.PILL.value
 
     @PrimaryKey(autoGenerate = true)
     var medicineId: Int = 0
@@ -88,7 +93,20 @@ class Medicine() {
     }
 
     override fun hashCode(): Int {
-        return Objects.hash(medicineId, name, useColor, color, notificationImportance, iconId, amount, refillSizes, unit, notes, showNotificationAsAlarm)
+        return Objects.hash(
+            medicineId,
+            name,
+            useColor,
+            color,
+            notificationImportance,
+            iconId,
+            amount,
+            refillSizes,
+            unit,
+            notes,
+            showNotificationAsAlarm,
+            type
+        )
     }
 
     private fun membersEqual(other: Medicine): Boolean {
@@ -96,7 +114,7 @@ class Medicine() {
                 name == other.name && useColor == other.useColor && color == other.color && notificationImportance == other.notificationImportance && iconId == other.iconId && amount == other.amount &&
                 refillSizes == other.refillSizes &&
                 unit == other.unit &&
-                notes == other.notes && showNotificationAsAlarm == other.showNotificationAsAlarm && expirationDate == other.expirationDate && productionDate == other.productionDate
+                notes == other.notes && showNotificationAsAlarm == other.showNotificationAsAlarm && expirationDate == other.expirationDate && productionDate == other.productionDate && type == other.type
     }
 
     val refillSize: Double

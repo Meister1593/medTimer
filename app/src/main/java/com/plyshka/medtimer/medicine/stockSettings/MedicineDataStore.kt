@@ -1,5 +1,6 @@
 package com.plyshka.medtimer.medicine.stockSettings
 
+import android.content.Context
 import com.plyshka.medtimer.database.FullMedicine
 import com.plyshka.medtimer.database.MedicineRepository
 import com.plyshka.medtimer.di.ApplicationScope
@@ -13,6 +14,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
 class MedicineDataStore @AssistedInject constructor(
+    @Assisted private val context: Context,
     @Assisted override var entity: FullMedicine,
     private val medicineRepository: MedicineRepository,
     private val timeFormatter: TimeFormatter,
@@ -21,13 +23,14 @@ class MedicineDataStore @AssistedInject constructor(
 
     @AssistedFactory
     interface Factory {
-        fun create(entity: FullMedicine): MedicineDataStore
+        fun create(context: Context, entity: FullMedicine): MedicineDataStore
     }
 
     override val entityId: Int get() = entity.medicine.medicineId
 
     override fun getString(key: String?, defValue: String?): String? {
         return when (key) {
+            "type" -> MedicineHelper.formatType(entity.medicine.type, context)
             "amount" -> MedicineHelper.formatAmount(entity.medicine.amount, "")
             "stock_unit" -> entity.medicine.unit
             "stock_refill_size" -> MedicineHelper.formatAmount(entity.medicine.refillSize, "")
@@ -39,11 +42,17 @@ class MedicineDataStore @AssistedInject constructor(
 
     override fun putString(key: String?, value: String?) {
         when (key) {
+            "type" -> entity.medicine.type = MedicineHelper.parseType(value)!!
             "amount" -> MedicineHelper.parseAmount(value)?.let { entity.medicine.amount = it }
             "stock_unit" -> entity.medicine.unit = value!!
-            "stock_refill_size" -> MedicineHelper.parseAmount(value)?.let { entity.medicine.refillSizes = arrayListOf(it) }
-            "production_date" -> entity.medicine.productionDate = timeFormatter.stringToLocalDate(value!!)!!.toEpochDay()
-            "expiration_date" -> entity.medicine.expirationDate = timeFormatter.stringToLocalDate(value!!)!!.toEpochDay()
+            "stock_refill_size" -> MedicineHelper.parseAmount(value)
+                ?.let { entity.medicine.refillSizes = arrayListOf(it) }
+
+            "production_date" -> entity.medicine.productionDate =
+                timeFormatter.stringToLocalDate(value!!)!!.toEpochDay()
+
+            "expiration_date" -> entity.medicine.expirationDate =
+                timeFormatter.stringToLocalDate(value!!)!!.toEpochDay()
         }
         coroutineScope.launch {
             medicineRepository.update(entity.medicine)

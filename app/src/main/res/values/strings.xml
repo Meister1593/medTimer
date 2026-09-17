@@ -289,4 +289,10 @@
     <string name="duplicate_including_reminders">Duplicate including reminders</string>
     <string name="automatic_backup">Automatic backup</string>
     <string name="backup_successful_to">Automatic backup successful: %s</string>
+    <string name="medicine_type">Type</string>
+    <string name="pill">Pill</string>
+    <string name="gel">Gel</string>
+    <string name="patch">Patch</string>
+    <string name="single_use_injection_vial">Single Use Injection Vial</string>
+    <string name="multi_use_injection_vial">Multi Use Injection Vial</string>
 </resources>

@@ -1,10 +1,13 @@
 package com.plyshka.medtimer.helpers
 
+import android.content.Context
 import android.text.SpannableStringBuilder
 import androidx.core.text.bold
 import androidx.core.text.color
 import com.plyshka.medtimer.database.FullMedicine
 import com.plyshka.medtimer.database.Medicine
+import com.plyshka.medtimer.medicine.stockSettings.MedicineType
+import com.plyshka.medtimer.medicine.stockSettings.toString
 import com.plyshka.medtimer.model.UserPreferences
 import java.text.NumberFormat
 import java.text.ParseException
@@ -51,6 +54,14 @@ object MedicineHelper {
             builder.color(0xffcc0000.toInt()) { bold { append("\uD83D\uDEAB") } }
         }
         return builder
+    }
+
+    fun formatType(type: Int, context: Context): String {
+        return MedicineType.fromType(type)!!.toString(context)
+    }
+
+    fun parseType(typeIndex: String?): Int? {
+        return typeIndex?.toInt()
     }
 
     fun formatAmount(amount: Double, unit: String): String {

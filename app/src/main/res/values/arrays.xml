@@ -170,4 +170,18 @@
         <item>@string/weekly</item>
         <item>@string/monthly</item>
     </string-array>
+    <string-array name="medicine_types">
+        <item>@string/pill</item>
+        <item>@string/gel</item>
+        <item>@string/patch</item>
+        <item>@string/single_use_injection_vial</item>
+        <item>@string/multi_use_injection_vial</item>
+    </string-array>
+    <string-array name="value_0_to_4">
+        <item>0</item>
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+        <item>4</item>
+    </string-array>
 </resources>
