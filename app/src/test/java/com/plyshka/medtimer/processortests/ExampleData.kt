@@ -1,0 +1,31 @@
+package com.plyshka.medtimer.processortests
+
+import com.plyshka.medtimer.reminders.notificationData.ReminderNotificationData
+import com.plyshka.medtimer.schedulertests.TestHelper
+import java.time.Instant
+
+fun fillWithTwoReminders(reminderContext: TestReminderContext): ReminderNotificationData {
+    reminderContext.repositoryFakes.medicines.add(TestHelper.buildFullMedicine(1, "Test").medicine)
+    reminderContext.repositoryFakes.reminders.add(TestHelper.buildReminder(1, 1, "1", 600, 1))
+    reminderContext.repositoryFakes.reminders.add(TestHelper.buildReminder(1, 2, "1", 600, 1))
+    reminderContext.repositoryFakes.reminderEvents.add(TestHelper.buildReminderEvent(1, 0, 1))
+    reminderContext.repositoryFakes.reminderEvents.add(TestHelper.buildReminderEvent(2, 0, 2))
+
+    return ReminderNotificationData(
+        Instant.ofEpochSecond(0),
+        intArrayOf(1, 2),
+        intArrayOf(1, 2)
+    )
+}
+
+fun fillWithOneReminder(reminderContext: TestReminderContext): ReminderNotificationData {
+    reminderContext.repositoryFakes.medicines.add(TestHelper.buildFullMedicine(1, "Test").medicine)
+    reminderContext.repositoryFakes.reminders.add(TestHelper.buildReminder(1, 1, "1", 600, 1))
+    reminderContext.repositoryFakes.reminderEvents.add(TestHelper.buildReminderEvent(1, 0, 1))
+
+    return ReminderNotificationData(
+        Instant.ofEpochSecond(0),
+        intArrayOf(1),
+        intArrayOf(1)
+    )
+}

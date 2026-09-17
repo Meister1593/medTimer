@@ -1,0 +1,48 @@
+package com.plyshka.medtimer.reminders.scheduling
+
+import com.plyshka.medtimer.database.Medicine
+import com.plyshka.medtimer.database.Reminder
+import com.plyshka.medtimer.database.ReminderEvent
+import com.plyshka.medtimer.preferences.PreferencesDataSource
+import com.plyshka.medtimer.reminders.TimeAccess
+
+class SchedulingFactory {
+    fun create(
+        reminder: Reminder,
+        medicine: Medicine,
+        reminderEvents: List<ReminderEvent>,
+        timeAccess: TimeAccess,
+        dataSource: PreferencesDataSource
+    ): Scheduling {
+        val scheduler = when (reminder.reminderType) {
+            Reminder.ReminderType.LINKED -> {
+                LinkedScheduling(reminder, reminderEvents, timeAccess)
+            }
+
+            Reminder.ReminderType.CONTINUOUS_INTERVAL -> {
+                IntervalScheduling(reminder, reminderEvents, timeAccess)
+            }
+
+            Reminder.ReminderType.WINDOWED_INTERVAL -> {
+                WindowedIntervalScheduling(reminder, reminderEvents, timeAccess)
+            }
+
+            Reminder.ReminderType.TIME_BASED -> {
+                StandardScheduling(reminder, reminderEvents, timeAccess)
+            }
+
+            Reminder.ReminderType.OUT_OF_STOCK -> {
+                OutOfStockScheduling(reminder, medicine, reminderEvents, timeAccess)
+            }
+
+            Reminder.ReminderType.EXPIRATION_DATE -> {
+                ExpirationDateScheduling(reminder, medicine, reminderEvents, timeAccess)
+            }
+
+            Reminder.ReminderType.REFILL -> {
+                error("Refill reminder cannot be scheduled.")
+            }
+        }
+        return WeekendModeSchedulingDecorator(scheduler, timeAccess, dataSource)
+    }
+}

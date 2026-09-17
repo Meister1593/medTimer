@@ -1,0 +1,43 @@
+package com.plyshka.medtimer
+
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
+import android.util.Log
+import com.plyshka.medtimer.di.ApplicationScope
+import com.plyshka.medtimer.reminders.ReminderProcessorBroadcastReceiver
+import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
+import javax.inject.Inject
+
+@AndroidEntryPoint
+class Autostart : BroadcastReceiver() {
+
+    companion object {
+        var hasRestored = false
+    }
+
+    @Inject
+    lateinit var autostartService: AutostartService
+
+    @Inject
+    @ApplicationScope
+    lateinit var applicationScope: CoroutineScope
+    override fun onReceive(context: Context, intent: Intent) {
+        if (hasRestored || intent.action == null) {
+            return
+        }
+
+        if (intent.action != Intent.ACTION_BOOT_COMPLETED && intent.action != Intent.ACTION_MY_PACKAGE_REPLACED) {
+            return
+        }
+
+        hasRestored = true
+        applicationScope.launch {
+            autostartService.restoreNotifications()
+            Log.i(LogTags.AUTOSTART, "Requesting reschedule")
+            ReminderProcessorBroadcastReceiver.requestScheduleNextNotification(context)
+        }
+    }
+}

@@ -1,0 +1,68 @@
+package com.plyshka.medtimer.medicine.advancedReminderPreferences
+
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
+import androidx.core.view.MenuProvider
+import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
+import androidx.navigation.fragment.NavHostFragment
+import com.plyshka.medtimer.OptionsMenu.Companion.enableOptionalIcons
+import com.plyshka.medtimer.R
+import com.plyshka.medtimer.database.Reminder
+import com.plyshka.medtimer.database.ReminderRepository
+import com.plyshka.medtimer.di.Dispatcher
+import com.plyshka.medtimer.di.MedTimerDispatchers
+import com.plyshka.medtimer.medicine.LinkedReminderHandling
+import dagger.assisted.Assisted
+import dagger.assisted.AssistedFactory
+import dagger.assisted.AssistedInject
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.launch
+
+class AdvancedReminderSettingsMenuProvider @AssistedInject constructor(
+    @Assisted private val fragment: Fragment,
+    private val linkedReminderHandlingFactory: LinkedReminderHandling.Factory,
+    private val reminderRepository: ReminderRepository,
+    @param:Dispatcher(MedTimerDispatchers.IO) private val ioDispatcher: CoroutineDispatcher
+) : MenuProvider {
+
+    @AssistedFactory
+    interface Factory {
+        fun create(fragment: Fragment): AdvancedReminderSettingsMenuProvider
+    }
+
+    lateinit var reminder: Reminder
+
+    override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
+        menuInflater.inflate(R.menu.advanced_reminder_settings, menu)
+        menu.setGroupDividerEnabled(true)
+        enableOptionalIcons(menu)
+
+        menu.findItem(R.id.duplicate).setOnMenuItemClickListener { _: MenuItem? ->
+            if (this::reminder.isInitialized) {
+                fragment.lifecycleScope.launch(ioDispatcher) {
+                    reminder.reminderId = 0
+                    reminderRepository.create(reminder)
+                }
+                NavHostFragment.findNavController(fragment).navigateUp()
+            }
+            true
+        }
+
+        menu.findItem(R.id.delete_reminder).setOnMenuItemClickListener { _: MenuItem? ->
+            if (this::reminder.isInitialized) {
+                linkedReminderHandlingFactory.create(reminder, fragment.lifecycleScope).deleteReminder(
+                    fragment.requireContext(),
+                    { NavHostFragment.findNavController(fragment).navigateUp() }, { }
+                )
+            }
+            true
+        }
+    }
+
+    override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
+        return false
+    }
+
+}

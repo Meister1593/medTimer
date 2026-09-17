@@ -1,0 +1,45 @@
+package com.plyshka.medtimer
+
+import android.content.Context
+import android.util.Log
+import com.plyshka.medtimer.database.ReminderEvent
+import com.plyshka.medtimer.database.ReminderEventRepository
+import com.plyshka.medtimer.di.Dispatcher
+import com.plyshka.medtimer.di.MedTimerDispatchers
+import com.plyshka.medtimer.reminders.getShowReminderNotificationIntent
+import com.plyshka.medtimer.reminders.notificationData.ReminderNotificationData
+import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.withContext
+import java.time.Instant
+import javax.inject.Inject
+import javax.inject.Singleton
+
+@Singleton
+class AutostartService @Inject constructor(
+    @param:ApplicationContext private val context: Context,
+    private val reminderEventRepository: ReminderEventRepository,
+    @param:Dispatcher(MedTimerDispatchers.Default) private val backgroundDispatcher: CoroutineDispatcher
+) {
+    suspend fun restoreNotifications() = withContext(backgroundDispatcher) {
+        Log.i(LogTags.AUTOSTART, "Restore notifications")
+
+        val reminderEventList: List<ReminderEvent> = reminderEventRepository.getLastDays(1)
+            .filter { it.status == ReminderEvent.ReminderStatus.RAISED }
+        val notificationsMap: Map<Long, List<ReminderEvent>> = reminderEventList.groupBy { it.remindedTimestamp }
+        for (notificationEntry in notificationsMap) {
+            val reminderIds = notificationEntry.value.map { it.reminderId }.toIntArray()
+            val reminderEventIds = notificationEntry.value.map { it.reminderEventId }.toIntArray()
+            val scheduledReminderNotificationData =
+                ReminderNotificationData.fromArrays(
+                    reminderIds,
+                    reminderEventIds,
+                    Instant.ofEpochSecond(notificationEntry.key),
+                    -1
+                )
+            Log.i(LogTags.AUTOSTART, "Restoring reminder event: $scheduledReminderNotificationData")
+            val intent = getShowReminderNotificationIntent(context, scheduledReminderNotificationData)
+            context.sendBroadcast(intent)
+        }
+    }
+}

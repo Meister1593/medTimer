@@ -1,0 +1,161 @@
+package com.plyshka.medtimer.statistics
+
+import android.text.SpannableStringBuilder
+import android.text.Spanned
+import android.content.Context
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.plyshka.medtimer.database.FullMedicine
+import com.plyshka.medtimer.database.Medicine
+import com.plyshka.medtimer.database.MedicineRepository
+import com.plyshka.medtimer.database.ReminderEvent
+import com.plyshka.medtimer.database.ReminderEventRepository
+import com.plyshka.medtimer.di.Dispatcher
+import com.plyshka.medtimer.di.MedTimerDispatchers
+import com.plyshka.medtimer.helpers.MedicineHelper
+import com.plyshka.medtimer.helpers.TimeHelper.secondsSinceEpochToLocalDate
+import com.plyshka.medtimer.helpers.addDividerToSpan
+import com.plyshka.medtimer.helpers.addImageToSpan
+import com.plyshka.medtimer.overview.OverviewReminderEvent
+import com.plyshka.medtimer.overview.OverviewScheduledReminderEvent
+import com.plyshka.medtimer.overview.getImage
+import com.plyshka.medtimer.preferences.PreferencesDataSource
+import com.plyshka.medtimer.reminders.TimeAccess
+import com.plyshka.medtimer.reminders.scheduling.ScheduledReminder
+import com.plyshka.medtimer.reminders.scheduling.SchedulingSimulator
+import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.launch
+import java.time.Instant
+import java.time.LocalDate
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
+import java.time.format.FormatStyle
+import javax.inject.Inject
+
+@HiltViewModel
+class CalendarEventsViewModel @Inject constructor(
+    @ApplicationContext private val context: Context,
+    private val medicineRepository: MedicineRepository,
+    private val reminderEventRepository: ReminderEventRepository,
+    private val preferencesDataSource: PreferencesDataSource,
+    private val reminderEventFactory: OverviewReminderEvent.Factory,
+    private val scheduledReminderEventFactory: OverviewScheduledReminderEvent.Factory,
+    @param:Dispatcher(MedTimerDispatchers.IO) private val ioDispatcher: CoroutineDispatcher
+) : ViewModel() {
+    private var reminderEvents: List<ReminderEvent> = listOf()
+    private var allMedicines: List<FullMedicine> = listOf()
+    private var medicine: Medicine? = null
+    private val eventsByDay = MutableSharedFlow<Map<LocalDate, Spanned>>(replay = 1)
+    private var eventListByDay: MutableMap<LocalDate, MutableList<Spanned>> = mutableMapOf()
+
+    fun getEventForMonths(
+        medicineId: Int, pastMonths: Int, futureMonths: Int
+
+    ): Flow<Map<LocalDate, Spanned>> {
+        eventListByDay.clear()
+
+        // Calculate days in the past and the future based on the current date
+        val currentDate = LocalDate.now()
+        val pastDays = currentDate.toEpochDay() - currentDate.minusMonths(pastMonths.toLong())
+            .withDayOfMonth(1).toEpochDay()
+        val futureDays = if (futureMonths > 0) (currentDate.plusMonths(futureMonths.toLong() + 1)
+            .withDayOfMonth(1).toEpochDay() - 1) - currentDate.toEpochDay()
+        else 0
+
+        viewModelScope.launch(ioDispatcher) {
+            reminderEvents = reminderEventRepository.getLastDays(pastDays.toInt())
+            allMedicines = medicineRepository.getFullAll()
+            if (medicineId > 0) {
+                medicine = medicineRepository.get(medicineId)
+                allMedicines =
+                    allMedicines.filter { medicine -> medicine.medicine.medicineId == medicineId }
+            }
+            addPastEvents(pastDays)
+            addFutureEvents(futureDays)
+            eventsByDay.emit(buildEventsByDay())
+        }
+        return eventsByDay
+    }
+
+    private fun buildEventsByDay(): Map<LocalDate, Spanned> {
+        val eventsByDayStrings: MutableMap<LocalDate, Spanned> = mutableMapOf()
+        for (day in eventListByDay.keys) {
+            eventListByDay[day]?.let { eventsByDayStrings[day] = buildDayEvents(day, it) }
+        }
+        return eventsByDayStrings
+    }
+
+    private fun buildDayEvents(day: LocalDate, eventStrings: List<Spanned>): Spanned {
+        val builder = SpannableStringBuilder()
+        if (eventStrings.isNotEmpty()) {
+            builder.append(day.format(DateTimeFormatter.ofLocalizedDate(FormatStyle.MEDIUM)))
+                .append("\n")
+        }
+        eventStrings.forEach { builder.append(it).append("\n") }
+
+        return builder
+    }
+
+    private fun addFutureEvents(futureDays: Long) {
+        val timeProvider = object : TimeAccess {
+            override fun systemZone(): ZoneId = ZoneId.systemDefault()
+            override fun localDate(): LocalDate = LocalDate.now()
+            override fun now(): Instant = Instant.now()
+        }
+        val endDay = LocalDate.now().plusDays(futureDays)
+
+        val schedulingSimulator = SchedulingSimulator(
+            allMedicines,
+            reminderEvents,
+            timeProvider,
+            preferencesDataSource
+        )
+
+        schedulingSimulator.simulate { scheduledReminder: ScheduledReminder, scheduledDate: LocalDate, _: Double ->
+            if (scheduledDate < endDay) {
+                eventListByDay.getOrPut(scheduledDate) { mutableListOf() }
+                    .add(scheduledReminderToString(scheduledReminder))
+            }
+            scheduledDate < endDay
+        }
+    }
+
+    private fun scheduledReminderToString(scheduledReminder: ScheduledReminder): Spanned {
+        return scheduledReminderEventFactory.create(scheduledReminder).text
+    }
+
+
+    private fun addPastEvents(pastDays: Long) {
+        val startDay = LocalDate.now().minusDays(pastDays)
+        for (reminderEvent: ReminderEvent in reminderEvents) {
+            if (reminderEvent.status == ReminderEvent.ReminderStatus.DELETED) {
+                continue
+            }
+
+            val day = secondsSinceEpochToLocalDate(
+                reminderEvent.remindedTimestamp,
+                ZoneId.systemDefault()
+            )
+            if ((day >= startDay) && (medicine == null || medicine?.name == MedicineHelper.normalizeMedicineName(
+                    reminderEvent.medicineName
+                ))
+            ) {
+                eventListByDay.getOrPut(day) { mutableListOf() }
+                    .add(reminderEventToString(reminderEvent))
+            }
+        }
+    }
+
+    private fun reminderEventToString(reminderEvent: ReminderEvent): Spanned {
+        val overviewReminderEvent = reminderEventFactory.create(reminderEvent)
+        val builder = SpannableStringBuilder()
+        addDividerToSpan(builder)
+        addImageToSpan(overviewReminderEvent.state.getImage(), builder, context)
+
+        return builder.append(" ").append(overviewReminderEvent.text)
+    }
+}

@@ -1,0 +1,55 @@
+package com.plyshka.medtimer
+
+import androidx.test.espresso.Espresso.onView
+import androidx.test.espresso.Espresso.pressBack
+import androidx.test.espresso.matcher.ViewMatchers.withId
+import com.adevinta.android.barista.assertion.BaristaListAssertions.assertDisplayedAtPosition
+import com.adevinta.android.barista.interaction.BaristaClickInteractions.clickOn
+import com.adevinta.android.barista.interaction.BaristaEditTextInteractions.writeTo
+import com.adevinta.android.barista.interaction.BaristaListInteractions.clickListItem
+import com.adevinta.android.barista.interaction.BaristaMenuClickInteractions.openMenu
+import com.adevinta.android.barista.rule.flaky.AllowFlaky
+import com.plyshka.medtimer.RecyclerViewDragAction.drag
+import org.junit.Test
+
+const val TEST_MED_1 = "Test"
+const val TEST_MED_2 = "Test2"
+const val TEST_MED_3 = "A test"
+
+class MedicineHandlingTest : BaseTestHelper() {
+
+
+    @Test
+    @AllowFlaky(attempts = 3)
+    fun medicineMoveTest() {
+        AndroidTestHelper.createMedicine(TEST_MED_1)
+        AndroidTestHelper.createMedicine(TEST_MED_2)
+
+        pressBack()
+
+        assertDisplayedAtPosition(R.id.medicineList, 0, R.id.medicineName, TEST_MED_1)
+
+        onView(withId(R.id.medicineList)).perform(drag(0, 1))
+        assertDisplayedAtPosition(R.id.medicineList, 0, R.id.medicineName, TEST_MED_2)
+        clickListItem(R.id.medicineList, 0)
+        writeTo(R.id.editMedicineName, TEST_MED_2 + "_")
+        pressBack()
+        assertDisplayedAtPosition(R.id.medicineList, 0, R.id.medicineName, TEST_MED_2 + '_')
+
+        onView(withId(R.id.medicineList)).perform(drag(1, 0))
+        assertDisplayedAtPosition(R.id.medicineList, 0, R.id.medicineName, TEST_MED_1)
+        onView(withId(R.id.medicineList)).perform(drag(0, 1))
+
+        AndroidTestHelper.createMedicine(TEST_MED_3)
+        pressBack()
+
+        assertDisplayedAtPosition(R.id.medicineList, 2, R.id.medicineName, TEST_MED_3)
+
+        openMenu()
+        clickOn(R.string.sort)
+        clickOn(R.string.by_name)
+        assertDisplayedAtPosition(R.id.medicineList, 0, R.id.medicineName, TEST_MED_3)
+        assertDisplayedAtPosition(R.id.medicineList, 1, R.id.medicineName, TEST_MED_1)
+        assertDisplayedAtPosition(R.id.medicineList, 2, R.id.medicineName, TEST_MED_2 + '_')
+    }
+}

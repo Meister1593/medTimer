@@ -1,0 +1,36 @@
+package com.plyshka.medtimer.reminders.scheduling
+
+import com.plyshka.medtimer.model.UserPreferences
+import com.plyshka.medtimer.preferences.PreferencesDataSource
+import com.plyshka.medtimer.reminders.TimeAccess
+import java.time.Instant
+
+class WeekendModeSchedulingDecorator(
+    private val scheduler: Scheduling,
+    private val timeAccess: TimeAccess,
+    private val dataSource: PreferencesDataSource
+) :
+    Scheduling {
+
+    fun adjustInstant(instant: Instant, settings: UserPreferences): Instant {
+        var instant = instant
+        if (settings.weekendMode) {
+            val localDateTime = instant.atZone(timeAccess.systemZone())
+            val dayOfWeek = localDateTime.dayOfWeek
+            val deltaSeconds = settings.weekendTime.toSecondOfDay() - localDateTime.toLocalTime().toSecondOfDay()
+            if (settings.weekendDays.contains(dayOfWeek.value.toString()) && deltaSeconds > 0) {
+                instant = instant.plusSeconds(deltaSeconds.toLong())
+            }
+        }
+        return instant
+    }
+
+    override fun getNextScheduledTime(): Instant? {
+        var nextScheduledTime = scheduler.getNextScheduledTime()
+
+        if (nextScheduledTime != null) {
+            nextScheduledTime = adjustInstant(nextScheduledTime, dataSource.preferences.value)
+        }
+        return nextScheduledTime
+    }
+}
