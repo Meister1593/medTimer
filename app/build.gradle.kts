@@ -4,7 +4,6 @@ plugins {
     alias(libs.plugins.triplet.play)
     alias(libs.plugins.androidx.navigation.safeargs)
     id("jacoco")
-    alias(libs.plugins.sonarqube)
     alias(libs.plugins.ksp)
     alias(libs.plugins.hilt)
 }
@@ -182,19 +181,7 @@ java {
 tasks.withType<JavaCompile> {
     options.compilerArgs.addAll(listOf("-Xlint:unchecked", "-Xlint:deprecation"))
 }
-sonar {
-    properties {
-        property("sonar.projectKey", "Futsch1_medTimer")
-        property("sonar.organization", "futsch1")
-        property("sonar.host.url", "https://sonarcloud.io")
-        property("sonar.gradle.skipCompile", "true")
-        property("sonar.android.lint.report", "build/reports/lint-results-debug.xml")
-        property(
-            "sonar.coverage.jacoco.xmlReportPaths",
-            "build/reports/jacoco/JacocoDebugCodeCoverage/JacocoDebugCodeCoverage.xml"
-        )
-    }
-}
+
 
 tasks.withType(Test::class) {
     configure<JacocoTaskExtension> {
