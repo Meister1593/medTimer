@@ -8,6 +8,7 @@ import com.plyshka.medtimer.database.Medicine
 import com.plyshka.medtimer.model.UserPreferences
 import java.text.NumberFormat
 import java.text.ParseException
+import java.util.Locale
 import java.util.regex.Pattern
 
 object MedicineHelper {
@@ -53,7 +54,7 @@ object MedicineHelper {
     }
 
     fun formatAmount(amount: Double, unit: String): String {
-        val numberFormat = NumberFormat.getNumberInstance()
+        val numberFormat = NumberFormat.getInstance(Locale.US) // todo: put it into settings
         numberFormat.minimumFractionDigits = 0
         numberFormat.maximumFractionDigits = 2
         return numberFormat.format(amount) + if (unit.isEmpty()) "" else " $unit"
@@ -64,7 +65,7 @@ object MedicineHelper {
         val matcher = numberRegex.matcher(amount ?: "")
 
         return if (matcher.find() && matcher.group(0) != null) {
-            val numberFormat = NumberFormat.getNumberInstance()
+            val numberFormat = NumberFormat.getInstance(Locale.US) // todo: put it into settings
             try {
                 numberFormat.parse(matcher.group(0)!!.replace(" ", ""))?.toDouble()
             } catch (_: ParseException) {
